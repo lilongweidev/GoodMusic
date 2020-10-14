@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/app_bg"
+        android:orientation="vertical"
+        tools:context=".ui.MainActivity">
+        <!--Toolbar-->
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/app_color"
+            app:navigationIcon="@mipmap/icon_return_white">
+
+            <TextView
+                android:id="@+id/tv_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="本地音乐"
+                android:textColor="@color/white"
+                android:textSize="@dimen/sp_18" />
+
+        </androidx.appcompat.widget.Toolbar>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <!--扫描音乐布局-->
+            <LinearLayout
+                android:id="@+id/lay_scan_music"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="@dimen/dp_140"
+                    android:layout_height="@dimen/dp_140"
+                    android:src="@mipmap/icon_empty" />
+                <!--扫描本地音乐-->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_setting_wallpaper"
+                    style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+                    android:layout_width="@dimen/dp_140"
+                    android:layout_height="@dimen/dp_40"
+                    android:layout_marginTop="@dimen/dp_16"
+                    android:insetTop="@dimen/dp_0"
+                    android:insetBottom="@dimen/dp_0"
+                    android:onClick="scanLocalMusic"
+                    android:text="扫描本地音乐"
+                    android:textSize="@dimen/sp_14"
+                    android:theme="@style/Theme.MaterialComponents.Light.NoActionBar"
+                    app:backgroundTint="@color/transparent"
+                    app:cornerRadius="@dimen/dp_20"
+                    app:strokeColor="@color/white"
+                    app:strokeWidth="@dimen/dp_1" />
+            </LinearLayout>
+            <!--列表-->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_music"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </RelativeLayout>
+    </LinearLayout>
+</layout>
