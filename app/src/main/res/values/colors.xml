@@ -17,5 +17,7 @@
     <color name="transparent">#00000000</color><!--透明-->
 
     <color name="gold_color">#FF9D00</color>
+    <color name="black">#000000</color>
+
 
 </resources>

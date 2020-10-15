@@ -45,14 +45,14 @@
                     android:src="@mipmap/icon_empty" />
                 <!--扫描本地音乐-->
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_setting_wallpaper"
+                    android:id="@+id/btn_scan_local_music"
                     style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
                     android:layout_width="@dimen/dp_140"
                     android:layout_height="@dimen/dp_40"
                     android:layout_marginTop="@dimen/dp_16"
                     android:insetTop="@dimen/dp_0"
                     android:insetBottom="@dimen/dp_0"
-                    android:onClick="scanLocalMusic"
+                    android:onClick="onClick"
                     android:text="扫描本地音乐"
                     android:textSize="@dimen/sp_14"
                     android:theme="@style/Theme.MaterialComponents.Light.NoActionBar"
@@ -66,6 +66,29 @@
                 android:id="@+id/rv_music"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
+            <!--定位当前播放音乐按钮-->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_location_play_music"
+                style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+                android:layout_width="@dimen/dp_28"
+                android:layout_height="@dimen/dp_28"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentBottom="true"
+                android:layout_margin="@dimen/dp_36"
+                android:insetLeft="@dimen/dp_0"
+                android:insetTop="@dimen/dp_0"
+                android:insetRight="@dimen/dp_0"
+                android:insetBottom="@dimen/dp_0"
+                android:onClick="onClick"
+                android:textSize="@dimen/sp_14"
+                android:theme="@style/Theme.MaterialComponents.Light.NoActionBar"
+                android:visibility="gone"
+                app:backgroundTint="@color/white"
+                app:cornerRadius="@dimen/dp_20"
+                app:icon="@drawable/music_location"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp"
+                app:iconTint="@color/black" />
         </RelativeLayout>
     </LinearLayout>
 </layout>

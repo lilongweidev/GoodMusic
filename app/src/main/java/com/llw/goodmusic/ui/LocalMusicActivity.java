@@ -1,16 +1,21 @@
 package com.llw.goodmusic.ui;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
 import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView.LayoutManager;
 
 import android.Manifest;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.widget.LinearLayout;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
+import com.google.android.material.button.MaterialButton;
 import com.llw.goodmusic.R;
 import com.llw.goodmusic.adapter.MusicListAdapter;
 import com.llw.goodmusic.basic.BasicActivity;
@@ -60,6 +65,11 @@ public class LocalMusicActivity extends BasicActivity {
      */
     private int oldPosition = -1;
 
+    /**
+     * 定位当前音乐按钮
+     */
+    private MaterialButton btnLocationPlayMusic;
+
     @Override
     public void initData(Bundle savedInstanceState) {
         initView();
@@ -73,6 +83,7 @@ public class LocalMusicActivity extends BasicActivity {
         toolbar = binding.toolbar;
         rvMusic = binding.rvMusic;
         layScanMusic = binding.layScanMusic;
+        btnLocationPlayMusic = binding.btnLocationPlayMusic;
         Back(toolbar);
 
         //当进入页面时发现有缓存数据时，则隐藏扫描布局，直接获取本地数据。
@@ -80,6 +91,41 @@ public class LocalMusicActivity extends BasicActivity {
             //省去一个点击扫描的步骤
             layScanMusic.setVisibility(View.GONE);
             permissionsRequest();
+        }
+
+        rvMusic.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    //暂停
+                    showLocationMusic(false);
+                } else if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
+                    //滑动
+                    showLocationMusic(true);
+                }
+            }
+        });
+    }
+
+    /**
+     * 显示定位当前音乐图标
+     */
+    private void showLocationMusic(boolean isScroll) {
+        //先判断是否存在播放音乐
+        if (oldPosition != -1) {
+            if (isScroll) {
+                //滑动
+                btnLocationPlayMusic.setVisibility(View.VISIBLE);
+            } else {
+                //延时隐藏  Android 11（即API 30:Android R）弃用了Handler默认的无参构造方法,所以传入了Looper.myLooper()
+                new Handler(Looper.myLooper()).postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        btnLocationPlayMusic.setVisibility(View.GONE);
+                    }
+                }, 2000);
+            }
         }
     }
 
@@ -123,12 +169,23 @@ public class LocalMusicActivity extends BasicActivity {
     }
 
     /**
-     * 扫描本地音乐
-     *
-     * @param view
+     * 页面点击事件
+     * @param view 控件
      */
-    public void scanLocalMusic(View view) {
-        permissionsRequest();
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.btn_scan_local_music:
+                //扫描本地音乐
+                permissionsRequest();
+                break;
+            case R.id.btn_location_play_music:
+                //定位当前播放歌曲
+                LinearLayoutManager linearLayoutManager = (LinearLayoutManager) rvMusic.getLayoutManager();
+                linearLayoutManager.scrollToPositionWithOffset(oldPosition, 0);
+                break;
+            default:
+                break;
+        }
     }
 
     /**
