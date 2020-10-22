@@ -13,12 +13,12 @@
         <!--标题-->
         <TextView
             android:id="@+id/tv_title"
-            android:gravity="center"
             android:layout_width="match_parent"
-            android:layout_gravity="center"
-            android:text="Good Music"
             android:layout_height="?attr/actionBarSize"
+            android:layout_gravity="center"
             android:background="@color/app_color"
+            android:gravity="center"
+            android:text="Good Music"
             android:textColor="@color/white"
             android:textSize="@dimen/sp_18" />
 
@@ -32,13 +32,13 @@
 
             <!--本地音乐-->
             <LinearLayout
-                android:onClick="onClick"
                 android:id="@+id/lay_local_music"
                 android:layout_width="@dimen/dp_120"
                 android:layout_height="@dimen/dp_120"
                 android:background="@drawable/shape_app_color_radius_5"
                 android:foreground="?android:attr/selectableItemBackground"
                 android:gravity="center"
+                android:onClick="onClick"
                 android:orientation="vertical">
 
                 <ImageView

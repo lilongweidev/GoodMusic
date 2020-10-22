@@ -8,22 +8,33 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.LayoutManager;
 
 import android.Manifest;
+import android.animation.ObjectAnimator;
+import android.graphics.drawable.Drawable;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.animation.LinearInterpolator;
 import android.widget.LinearLayout;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.imageview.ShapeableImageView;
+import com.google.android.material.textview.MaterialTextView;
 import com.llw.goodmusic.R;
 import com.llw.goodmusic.adapter.MusicListAdapter;
 import com.llw.goodmusic.basic.BasicActivity;
 import com.llw.goodmusic.bean.Song;
 import com.llw.goodmusic.databinding.ActivityLocalMusicBinding;
+import com.llw.goodmusic.utils.BLog;
 import com.llw.goodmusic.utils.Constant;
 import com.llw.goodmusic.utils.MusicUtils;
 import com.llw.goodmusic.utils.SPUtils;
+import com.llw.goodmusic.view.MusicRoundProgressView;
 import com.permissionx.guolindev.PermissionX;
 import com.permissionx.guolindev.callback.ExplainReasonCallbackWithBeforeParam;
 import com.permissionx.guolindev.callback.ForwardToSettingsCallback;
@@ -31,6 +42,7 @@ import com.permissionx.guolindev.callback.RequestCallback;
 import com.permissionx.guolindev.request.ExplainScope;
 import com.permissionx.guolindev.request.ForwardScope;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,8 +51,10 @@ import java.util.List;
  *
  * @author llw
  */
-public class LocalMusicActivity extends BasicActivity {
+public class LocalMusicActivity extends BasicActivity implements MediaPlayer.OnCompletionListener {
 
+
+    private static final String TAG = "LocalMusic";
 
     private Toolbar toolbar;
     /**
@@ -69,6 +83,42 @@ public class LocalMusicActivity extends BasicActivity {
      * 定位当前音乐按钮
      */
     private MaterialButton btnLocationPlayMusic;
+    /**
+     * 底部logo图标，点击之后弹出当前播放歌曲详情页
+     */
+    private ShapeableImageView ivLogo;
+    /**
+     * 底部当前播放歌名
+     */
+    private MaterialTextView tvSongName;
+    /**
+     * 底部当前歌曲控制按钮, 播放和暂停
+     */
+    private MaterialButton btnPlay;
+    /**
+     * 音频播放器
+     */
+    private MediaPlayer mediaPlayer;
+    /**
+     * 记录当前播放歌曲的位置
+     */
+    public int mCurrentPosition = -1;
+
+    /**
+     * 自定义进度条
+     */
+    private MusicRoundProgressView musicProgress;
+
+    /**
+     * 音乐进度间隔时间
+     */
+    private static final int INTERNAL_TIME = 1000;
+
+    /**
+     * 图片动画
+     */
+    private ObjectAnimator logoAnimation;
+
 
     @Override
     public void initData(Bundle savedInstanceState) {
@@ -84,6 +134,12 @@ public class LocalMusicActivity extends BasicActivity {
         rvMusic = binding.rvMusic;
         layScanMusic = binding.layScanMusic;
         btnLocationPlayMusic = binding.btnLocationPlayMusic;
+        //新增 第三篇文章
+        ivLogo = binding.ivLogo;
+        tvSongName = binding.tvSongName;
+        btnPlay = binding.btnPlay;
+        musicProgress = binding.musicProgress;
+
         Back(toolbar);
 
         //当进入页面时发现有缓存数据时，则隐藏扫描布局，直接获取本地数据。
@@ -106,6 +162,20 @@ public class LocalMusicActivity extends BasicActivity {
                 }
             }
         });
+
+
+        initAnimation();
+    }
+
+    /**
+     * 初始化动画
+     */
+    private void initAnimation() {
+        logoAnimation = ObjectAnimator.ofFloat(ivLogo, "rotation", 0.0f, 360.0f);
+        logoAnimation.setDuration(3000);
+        logoAnimation.setInterpolator(new LinearInterpolator());
+        logoAnimation.setRepeatCount(-1);
+        logoAnimation.setRepeatMode(ObjectAnimator.RESTART);
     }
 
     /**
@@ -170,6 +240,7 @@ public class LocalMusicActivity extends BasicActivity {
 
     /**
      * 页面点击事件
+     *
      * @param view 控件
      */
     public void onClick(View view) {
@@ -183,10 +254,35 @@ public class LocalMusicActivity extends BasicActivity {
                 LinearLayoutManager linearLayoutManager = (LinearLayoutManager) rvMusic.getLayoutManager();
                 linearLayoutManager.scrollToPositionWithOffset(oldPosition, 0);
                 break;
+            case R.id.btn_play:
+                //控制音乐 播放和暂停
+                if (mediaPlayer == null) {
+                    //没有播放过音乐 ,点击之后播放第一首
+                    oldPosition = 0;
+                    mCurrentPosition = 0;
+                    mList.get(mCurrentPosition).setCheck(true);
+                    mAdapter.changeState();
+                    changeSong(mCurrentPosition);
+                } else {
+                    //播放过音乐  暂停或者播放
+                    if (mediaPlayer.isPlaying()) {
+                        mediaPlayer.pause();
+                        btnPlay.setIcon(getDrawable(R.mipmap.icon_play));
+                        btnPlay.setIconTint(getColorStateList(R.color.white));
+                        logoAnimation.pause();
+                    } else {
+                        mediaPlayer.start();
+                        btnPlay.setIcon(getDrawable(R.mipmap.icon_pause));
+                        btnPlay.setIconTint(getColorStateList(R.color.gold_color));
+                        logoAnimation.resume();
+                    }
+                }
+                break;
             default:
                 break;
         }
     }
+
 
     /**
      * 获取音乐列表
@@ -227,24 +323,144 @@ public class LocalMusicActivity extends BasicActivity {
             public void onItemChildClick(BaseQuickAdapter adapter, View view, int position) {
                 if (view.getId() == R.id.item_music) {
 
-                    if (oldPosition == -1) {
-                        //未点击过 第一次点击
-                        oldPosition = position;
-                        mList.get(position).setCheck(true);
-                    } else {
-                        //大于 1次
-                        if (oldPosition != position) {
-                            mList.get(oldPosition).setCheck(false);
-                            mList.get(position).setCheck(true);
-                            //重新设置位置，当下一次点击时position又会和oldPosition不一样
-                            oldPosition = position;
-                        }
-                    }
-                    mAdapter.changeState();
+                    //控制当前播放位置
+                    playPositionControl(position);
+
+                    mCurrentPosition = position;
+                    changeSong(mCurrentPosition);
+
                 }
             }
         });
     }
 
+    /**
+     * 控制播放位置
+     *
+     * @param position
+     */
+    private void playPositionControl(int position) {
+        if (oldPosition == -1) {
+            //未点击过 第一次点击
+            oldPosition = position;
+            mList.get(position).setCheck(true);
+        } else {
+            //大于 1次
+            if (oldPosition != position) {
+                mList.get(oldPosition).setCheck(false);
+                mList.get(position).setCheck(true);
+                //重新设置位置，当下一次点击时position又会和oldPosition不一样
+                oldPosition = position;
+            }
+        }
+        //刷新数据
+        mAdapter.changeState();
 
+    }
+
+    /**
+     * 切换歌曲
+     */
+    private void changeSong(int position) {
+
+        if (mediaPlayer == null) {
+            mediaPlayer = new MediaPlayer();
+            //监听音乐播放完毕事件，自动下一曲
+            mediaPlayer.setOnCompletionListener(this);
+        }
+
+        try {
+            //切歌前先重置，释放掉之前的资源
+            mediaPlayer.reset();
+            BLog.i(TAG, mList.get(position).path);
+            //设置播放音频的资源路径
+            mediaPlayer.setDataSource(mList.get(position).path);
+            //设置播放的歌名和歌手
+            tvSongName.setText(mList.get(position).song + " - " + mList.get(position).singer);
+            //如果内容超过控件，则启用跑马灯效果
+            tvSongName.setSelected(true);
+            //开始播放前的准备工作，加载多媒体资源，获取相关信息
+            mediaPlayer.prepare();
+            //开始播放音频
+            mediaPlayer.start();
+
+            musicProgress.setProgress(0, mediaPlayer.getDuration());
+            //更新进度
+            updateProgress();
+
+            //播放按钮控制
+            if (mediaPlayer.isPlaying()) {
+                btnPlay.setIcon(getDrawable(R.mipmap.icon_pause));
+                btnPlay.setIconTint(getColorStateList(R.color.gold_color));
+                logoAnimation.resume();
+            } else {
+
+                btnPlay.setIcon(getDrawable(R.mipmap.icon_play));
+                btnPlay.setIconTint(getColorStateList(R.color.white));
+                logoAnimation.pause();
+            }
+
+            //图片旋转动画
+            logoAnimation.start();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+
+    /**
+     * 播放完成之后自动下一曲
+     *
+     * @param mp
+     */
+    @Override
+    public void onCompletion(MediaPlayer mp) {
+
+        //停止旋转并重置
+        logoAnimation.end();
+        int position = -1;
+        if (mList != null) {
+            if (mCurrentPosition == mList.size() - 1) {
+                //当前为最后一首歌时,则切换到列表的第一首歌
+                position = mCurrentPosition = 0;
+            } else {
+                position = ++mCurrentPosition;
+            }
+        }
+
+        //移动播放位置
+        playPositionControl(position);
+        //切歌
+        changeSong(position);
+
+    }
+
+    private Handler mHandler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message message) {
+            // 展示给进度条和当前时间
+            int progress = mediaPlayer.getCurrentPosition();
+            musicProgress.setProgress(progress, mediaPlayer.getDuration());
+
+            //更新进度
+            updateProgress();
+            return true;
+        }
+    });
+
+    /**
+     * 更新进度
+     */
+    private void updateProgress() {
+        // 使用Handler每间隔1s发送一次空消息，通知进度条更新
+        // 获取一个现成的消息
+        Message msg = Message.obtain();
+        // 使用MediaPlayer获取当前播放时间除以总时间的进度
+        int progress = mediaPlayer.getCurrentPosition();
+        msg.arg1 = progress;
+        mHandler.sendMessageDelayed(msg, INTERNAL_TIME);
+    }
 }

@@ -22,8 +22,6 @@ public class MusicApplication extends BasicApplication {
     private static Context context;
     private static ActivityManager activityManager;
 
-    private static Activity sActivity;
-
     public static Context getMyContext() {
         return weatherApplication == null ? null : weatherApplication.getApplicationContext();
     }

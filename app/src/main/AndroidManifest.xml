@@ -4,6 +4,8 @@
     <!-- 文件读写权限  Android6.0 以后需要动态获取  10.0之后对文件的处理更复杂了 -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_INTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_INTERNAL_STORAGE" />
 
     <application
         android:name=".MusicApplication"

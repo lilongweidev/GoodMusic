@@ -15,4 +15,17 @@
         <item name="android:windowBackground">@drawable/splash_bg</item>
     </style>
 
+    <!-- 圆形图片 -->
+    <style name="circleImageStyle">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <!--圆形进度条-->
+    <declare-styleable name="RoundProgressView">
+        <attr name="radius" format="dimension"/>
+        <attr name="strokeWidth" format="dimension"/>
+        <attr name="strokeColor" format="color"/>
+    </declare-styleable>
+
 </resources>

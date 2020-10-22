@@ -63,7 +63,7 @@ public class SplashActivity extends AppCompatActivity {
                     @Override
                     public void onAnimationEnd(Animation animation) {
                         //动画结束时跳转到主页面
-                        startActivity(new Intent(SplashActivity.this,MainActivity.class));
+                        startActivity(new Intent(SplashActivity.this, MainActivity.class));
                     }
 
                     @Override
@@ -74,5 +74,23 @@ public class SplashActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private class listener implements Animation.AnimationListener {
+
+        @Override
+        public void onAnimationStart(Animation animation) {
+
+        }
+
+        @Override
+        public void onAnimationEnd(Animation animation) {
+
+        }
+
+        @Override
+        public void onAnimationRepeat(Animation animation) {
+
+        }
     }
 }

@@ -28,52 +28,62 @@
 
         </androidx.appcompat.widget.Toolbar>
 
+        <!--主体页面-->
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-            <!--扫描音乐布局-->
-            <LinearLayout
-                android:id="@+id/lay_scan_music"
+
+            <!--扫描布局和歌曲列表-->
+            <RelativeLayout
+                android:id="@+id/lay_body"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:gravity="center"
-                android:orientation="vertical">
+                android:layout_above="@+id/lay_bottom">
+                <!--扫描音乐布局-->
+                <LinearLayout
+                    android:id="@+id/lay_scan_music"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical">
 
-                <ImageView
-                    android:layout_width="@dimen/dp_140"
-                    android:layout_height="@dimen/dp_140"
-                    android:src="@mipmap/icon_empty" />
-                <!--扫描本地音乐-->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_scan_local_music"
-                    style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
-                    android:layout_width="@dimen/dp_140"
-                    android:layout_height="@dimen/dp_40"
-                    android:layout_marginTop="@dimen/dp_16"
-                    android:insetTop="@dimen/dp_0"
-                    android:insetBottom="@dimen/dp_0"
-                    android:onClick="onClick"
-                    android:text="扫描本地音乐"
-                    android:textSize="@dimen/sp_14"
-                    android:theme="@style/Theme.MaterialComponents.Light.NoActionBar"
-                    app:backgroundTint="@color/transparent"
-                    app:cornerRadius="@dimen/dp_20"
-                    app:strokeColor="@color/white"
-                    app:strokeWidth="@dimen/dp_1" />
-            </LinearLayout>
-            <!--列表-->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_music"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                    <ImageView
+                        android:layout_width="@dimen/dp_140"
+                        android:layout_height="@dimen/dp_140"
+                        android:src="@mipmap/icon_empty" />
+                    <!--扫描本地音乐-->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_scan_local_music"
+                        style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+                        android:layout_width="@dimen/dp_140"
+                        android:layout_height="@dimen/dp_40"
+                        android:layout_marginTop="@dimen/dp_16"
+                        android:insetTop="@dimen/dp_0"
+                        android:insetBottom="@dimen/dp_0"
+                        android:onClick="onClick"
+                        android:text="扫描本地音乐"
+                        android:textSize="@dimen/sp_14"
+                        android:theme="@style/Theme.MaterialComponents.Light.NoActionBar"
+                        app:backgroundTint="@color/transparent"
+                        app:cornerRadius="@dimen/dp_20"
+                        app:strokeColor="@color/white"
+                        app:strokeWidth="@dimen/dp_1" />
+                </LinearLayout>
+                <!--列表-->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_music"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </RelativeLayout>
+
             <!--定位当前播放音乐按钮-->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_location_play_music"
                 style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
                 android:layout_width="@dimen/dp_28"
                 android:layout_height="@dimen/dp_28"
+                android:layout_above="@+id/lay_bottom"
                 android:layout_alignParentRight="true"
-                android:layout_alignParentBottom="true"
                 android:layout_margin="@dimen/dp_36"
                 android:insetLeft="@dimen/dp_0"
                 android:insetTop="@dimen/dp_0"
@@ -89,6 +99,79 @@
                 app:iconGravity="textStart"
                 app:iconPadding="0dp"
                 app:iconTint="@color/black" />
+
+            <!--底部播放控制布局-->
+            <LinearLayout
+                android:id="@+id/lay_bottom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:background="@color/bottom_bg_color"
+                android:gravity="center_vertical"
+                android:paddingLeft="@dimen/dp_8"
+                android:paddingTop="@dimen/dp_8"
+                android:paddingRight="@dimen/dp_16"
+                android:paddingBottom="@dimen/dp_8">
+
+                <!-- logo和播放进度 使用相对布局达成覆盖的效果-->
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+                    <!--logo-->
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/iv_logo"
+                        android:layout_width="@dimen/dp_48"
+                        android:layout_height="@dimen/dp_48"
+                        android:padding="1dp"
+                        android:src="@mipmap/icon_music"
+                        app:shapeAppearanceOverlay="@style/circleImageStyle"
+                        app:strokeColor="@color/white"
+                        app:strokeWidth="@dimen/dp_2" />
+                    <!--播放进度  自定义View-->
+                    <com.llw.goodmusic.view.MusicRoundProgressView
+                        android:id="@+id/music_progress"
+                        android:layout_width="@dimen/dp_48"
+                        android:layout_height="@dimen/dp_48"
+                        app:radius="20dp"
+                        app:strokeColor="@color/black"
+                        app:strokeWidth="2dp" />
+                </RelativeLayout>
+
+                <!--歌曲信息  歌名 - 歌手 -->
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tv_song_name"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="marquee"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:marqueeRepeatLimit="marquee_forever"
+                    android:paddingLeft="@dimen/dp_12"
+                    android:paddingRight="@dimen/dp_12"
+                    android:singleLine="true"
+                    android:text="Good Music"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/sp_16" />
+                <!--歌曲控制按钮-->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_play"
+                    android:layout_width="@dimen/dp_36"
+                    android:layout_height="@dimen/dp_36"
+                    android:insetLeft="@dimen/dp_0"
+                    android:insetTop="@dimen/dp_0"
+                    android:insetRight="@dimen/dp_0"
+                    android:insetBottom="@dimen/dp_0"
+                    android:onClick="onClick"
+                    android:theme="@style/Theme.MaterialComponents.Light.NoActionBar"
+                    app:backgroundTint="@color/transparent"
+                    app:cornerRadius="@dimen/dp_18"
+                    app:icon="@mipmap/icon_play"
+                    app:iconGravity="textStart"
+                    app:iconPadding="@dimen/dp_0"
+                    app:iconSize="@dimen/dp_36" />
+            </LinearLayout>
+
         </RelativeLayout>
     </LinearLayout>
 </layout>
