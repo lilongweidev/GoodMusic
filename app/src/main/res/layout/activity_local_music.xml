@@ -132,8 +132,8 @@
                         android:id="@+id/music_progress"
                         android:layout_width="@dimen/dp_48"
                         android:layout_height="@dimen/dp_48"
-                        app:radius="20dp"
-                        app:strokeColor="@color/black"
+                        app:radius="22dp"
+                        app:strokeColor="@color/gold_color"
                         app:strokeWidth="2dp" />
                 </RelativeLayout>
 

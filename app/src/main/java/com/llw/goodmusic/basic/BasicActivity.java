@@ -1,7 +1,10 @@
 package com.llw.goodmusic.basic;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
@@ -10,12 +13,23 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import com.llw.goodmusic.service.MusicService;
+import com.llw.goodmusic.utils.BLog;
+
+import static com.llw.goodmusic.utils.Constant.CLOSE;
+import static com.llw.goodmusic.utils.Constant.NEXT;
+import static com.llw.goodmusic.utils.Constant.PLAY;
+import static com.llw.goodmusic.utils.Constant.PREV;
+
 /**
  * 基础Activity
  *
  * @author llw
  */
 public abstract class BasicActivity extends AppCompatActivity implements UiCallBack {
+
+    private static final String TAG = "BasicActivity";
+
     /**
      * 快速点击的时间间隔
      */
@@ -43,6 +57,7 @@ public abstract class BasicActivity extends AppCompatActivity implements UiCallB
         }
         //初始化数据
         initData(savedInstanceState);
+
     }
 
     @Override
@@ -91,4 +106,5 @@ public abstract class BasicActivity extends AppCompatActivity implements UiCallB
     protected void show(CharSequence llw) {
         Toast.makeText(context, llw, Toast.LENGTH_SHORT).show();
     }
+
 }

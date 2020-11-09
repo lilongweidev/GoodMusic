@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!--底部播放控制布局-->
+    <LinearLayout
+        android:id="@+id/lay_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@color/bottom_bg_color"
+        android:gravity="center_vertical"
+        android:paddingLeft="@dimen/dp_8"
+        android:paddingTop="@dimen/dp_8"
+        android:paddingRight="@dimen/dp_16"
+        android:paddingBottom="@dimen/dp_8">
+
+        <!-- logo和播放进度 使用相对布局达成覆盖的效果-->
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <!--logo-->
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/iv_logo"
+                android:layout_width="@dimen/dp_48"
+                android:layout_height="@dimen/dp_48"
+                android:padding="1dp"
+                android:src="@mipmap/icon_music"
+                app:shapeAppearanceOverlay="@style/circleImageStyle"
+                app:strokeColor="@color/white"
+                app:strokeWidth="@dimen/dp_2" />
+            <!--播放进度  自定义View-->
+            <com.llw.goodmusic.view.MusicRoundProgressView
+                android:id="@+id/music_progress"
+                android:layout_width="@dimen/dp_48"
+                android:layout_height="@dimen/dp_48"
+                app:radius="22dp"
+                app:strokeColor="@color/gold_color"
+                app:strokeWidth="2dp" />
+        </RelativeLayout>
+
+        <!--歌曲信息  歌名 - 歌手 -->
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tv_song_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="marquee"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:paddingLeft="@dimen/dp_12"
+            android:paddingRight="@dimen/dp_12"
+            android:singleLine="true"
+            android:text="Good Music"
+            android:textColor="@color/white"
+            android:textSize="@dimen/sp_16" />
+        <!--歌曲控制按钮-->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_play"
+            android:layout_width="@dimen/dp_36"
+            android:layout_height="@dimen/dp_36"
+            android:insetLeft="@dimen/dp_0"
+            android:insetTop="@dimen/dp_0"
+            android:insetRight="@dimen/dp_0"
+            android:insetBottom="@dimen/dp_0"
+            android:theme="@style/Theme.MaterialComponents.Light.NoActionBar"
+            app:backgroundTint="@color/transparent"
+            app:cornerRadius="@dimen/dp_18"
+            app:icon="@mipmap/icon_play"
+            app:iconGravity="textStart"
+            app:iconPadding="@dimen/dp_0"
+            app:iconSize="@dimen/dp_36" />
+    </LinearLayout>
+</layout>

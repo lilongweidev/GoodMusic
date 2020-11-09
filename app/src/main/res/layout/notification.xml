@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
+    <!--专辑封面图-->
+    <ImageView
+        android:id="@+id/iv_album_cover"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:src="@mipmap/icon_notification_default" />
+
+    <LinearLayout
+        android:gravity="center_vertical"
+        android:paddingStart="@dimen/dp_12"
+        android:paddingEnd="@dimen/dp_6"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_64">
+
+        <!--歌曲信息-->
+        <LinearLayout
+            android:gravity="center_vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tv_notification_song_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="marquee"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:singleLine="true"
+                android:text="歌曲名"
+                android:textColor="@color/black"
+                android:textSize="14sp" />
+
+            <TextView
+                android:layout_marginStart="@dimen/dp_12"
+                android:id="@+id/tv_notification_singer"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:singleLine="true"
+                android:layout_height="wrap_content"
+                android:text="歌手名"
+                android:textSize="@dimen/sp_12" />
+
+            <ImageButton
+                android:id="@+id/btn_notification_close"
+                android:layout_width="@dimen/dp_20"
+                android:layout_height="@dimen/dp_20"
+                android:background="@color/transparent"
+                android:src="@drawable/close_gray" />
+        </LinearLayout>
+        <!--歌曲控制-->
+        <LinearLayout
+            android:layout_marginTop="@dimen/dp_4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center">
+            <!--上一曲-->
+            <ImageButton
+                android:id="@+id/btn_notification_previous"
+                android:layout_width="@dimen/dp_30"
+                android:layout_height="@dimen/dp_30"
+                android:background="@null"
+                android:scaleType="fitCenter"
+                android:src="@drawable/previous_black" />
+            <!--播放/暂停-->
+            <ImageButton
+                android:id="@+id/btn_notification_play"
+                android:layout_width="@dimen/dp_30"
+                android:layout_height="@dimen/dp_30"
+                android:layout_marginStart="@dimen/dp_30"
+                android:layout_marginEnd="@dimen/dp_30"
+                android:background="@null"
+                android:scaleType="fitCenter"
+                android:src="@drawable/play_black" />
+            <!--下一曲-->
+            <ImageButton
+                android:id="@+id/btn_notification_next"
+                android:layout_width="@dimen/dp_30"
+                android:layout_height="@dimen/dp_30"
+                android:background="@null"
+                android:scaleType="fitCenter"
+                android:src="@drawable/next_black" />
+
+
+        </LinearLayout>
+    </LinearLayout>
+
+
+
+
+</LinearLayout>

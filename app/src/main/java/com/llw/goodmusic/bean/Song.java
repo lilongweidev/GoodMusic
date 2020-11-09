@@ -1,11 +1,14 @@
 package com.llw.goodmusic.bean;
 
+
+import org.litepal.crud.LitePalSupport;
+
 /**
  * 歌曲Bean
  *
  * @author llw
  */
-public class Song {
+public class Song extends LitePalSupport {
     /**
      * 歌手
      */
@@ -15,13 +18,13 @@ public class Song {
      */
     public String song;
     /**
+     * 专辑ID
+     */
+    public int albumId;
+    /**
      * 专辑名
      */
     public String album;
-    /**
-     * 专辑图片
-     */
-    public String album_art;
     /**
      * 歌曲的地址
      */
@@ -79,20 +82,20 @@ public class Song {
         this.size = size;
     }
 
+    public int getAlbumId() {
+        return albumId;
+    }
+
+    public void setAlbumId(int albumId) {
+        this.albumId = albumId;
+    }
+
     public String getAlbum() {
         return album;
     }
 
     public void setAlbum(String album) {
         this.album = album;
-    }
-
-    public String getAlbum_art() {
-        return album_art;
-    }
-
-    public void setAlbum_art(String album_art) {
-        this.album_art = album_art;
     }
 
     public boolean isCheck() {

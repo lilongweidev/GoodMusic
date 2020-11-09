@@ -47,6 +47,12 @@ dependencies {
     implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.30'
     //权限请求框架
     implementation 'com.permissionx.guolindev:permissionx:1.4.0'
+    //数据解析
+    implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
+    //Android SQLite操作框架
+    implementation 'org.litepal.guolindev:core:3.1.1'
+    //Service中使用lifecycle
+    implementation "androidx.lifecycle:lifecycle-service:2.2.0"
 
 
 

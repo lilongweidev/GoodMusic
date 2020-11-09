@@ -21,6 +21,8 @@
 
     <color name="bottom_bg_color">#1A191D</color>
 
+    <color name="line_color">#CBCBCB</color>
+
 
 
 </resources>

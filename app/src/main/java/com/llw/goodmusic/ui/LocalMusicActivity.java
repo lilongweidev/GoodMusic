@@ -9,12 +9,14 @@ import androidx.recyclerview.widget.RecyclerView.LayoutManager;
 
 import android.Manifest;
 import android.animation.ObjectAnimator;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -25,6 +27,7 @@ import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.textview.MaterialTextView;
+import com.google.gson.Gson;
 import com.llw.goodmusic.R;
 import com.llw.goodmusic.adapter.MusicListAdapter;
 import com.llw.goodmusic.basic.BasicActivity;
@@ -34,6 +37,7 @@ import com.llw.goodmusic.utils.BLog;
 import com.llw.goodmusic.utils.Constant;
 import com.llw.goodmusic.utils.MusicUtils;
 import com.llw.goodmusic.utils.SPUtils;
+import com.llw.goodmusic.utils.ToastUtils;
 import com.llw.goodmusic.view.MusicRoundProgressView;
 import com.permissionx.guolindev.PermissionX;
 import com.permissionx.guolindev.callback.ExplainReasonCallbackWithBeforeParam;
@@ -41,6 +45,8 @@ import com.permissionx.guolindev.callback.ForwardToSettingsCallback;
 import com.permissionx.guolindev.callback.RequestCallback;
 import com.permissionx.guolindev.request.ExplainScope;
 import com.permissionx.guolindev.request.ForwardScope;
+
+import org.litepal.LitePal;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -119,6 +125,11 @@ public class LocalMusicActivity extends BasicActivity implements MediaPlayer.OnC
      */
     private ObjectAnimator logoAnimation;
 
+    /**
+     * 本地音乐数据  不是缓存
+     */
+    private boolean localMusicData = false;
+
 
     @Override
     public void initData(Bundle savedInstanceState) {
@@ -172,7 +183,7 @@ public class LocalMusicActivity extends BasicActivity implements MediaPlayer.OnC
      */
     private void initAnimation() {
         logoAnimation = ObjectAnimator.ofFloat(ivLogo, "rotation", 0.0f, 360.0f);
-        logoAnimation.setDuration(3000);
+        logoAnimation.setDuration(6000);
         logoAnimation.setInterpolator(new LinearInterpolator());
         logoAnimation.setRepeatCount(-1);
         logoAnimation.setRepeatMode(ObjectAnimator.RESTART);
@@ -257,6 +268,10 @@ public class LocalMusicActivity extends BasicActivity implements MediaPlayer.OnC
             case R.id.btn_play:
                 //控制音乐 播放和暂停
                 if (mediaPlayer == null) {
+                    if (mList.size() == 0) {
+                        ToastUtils.shortToast(context, "没有可播放的音乐");
+                        return;
+                    }
                     //没有播放过音乐 ,点击之后播放第一首
                     oldPosition = 0;
                     mCurrentPosition = 0;
@@ -288,22 +303,62 @@ public class LocalMusicActivity extends BasicActivity implements MediaPlayer.OnC
      * 获取音乐列表
      */
     private void getMusicList() {
+        localMusicData = SPUtils.getBoolean(Constant.LOCAL_MUSIC_DB, false, context);
 
         //清除列表数据
         mList.clear();
-        //将扫描到的音乐赋值给音乐列表
-        mList = MusicUtils.getMusicData(this);
+        if (localMusicData) {
+            //有数据则读取本地数据库的数据
+            BLog.d(TAG, "读取本地数据库 ====>");
+            mList = LitePal.findAll(Song.class);
+        } else {
+            //没有数据则扫描本地文件夹获取音乐数据
+            BLog.d(TAG, "扫描本地文件夹 ====>");
+            mList = MusicUtils.getMusicData(this);
+        }
 
         if (mList != null && mList.size() > 0) {
-            //是否有缓存歌曲
-            SPUtils.putBoolean(Constant.LOCAL_MUSIC_DATA, true, context);
-            layScanMusic.setVisibility(View.GONE);
             //显示本地音乐
             showLocalMusicData();
+
+            if (!localMusicData) {
+                //添加到本地数据库中
+                addLocalDB();
+            }
+
         } else {
             show("兄嘚，你是一无所有啊~");
         }
 
+    }
+
+    /**
+     * 添加到本地数据库
+     */
+    private void addLocalDB() {
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < mList.size(); i++) {
+                    Song song = new Song();
+                    song.setSinger(mList.get(i).getSinger());
+                    song.setSong(mList.get(i).getSong());
+                    song.setAlbumId(mList.get(i).getAlbumId());
+                    song.setAlbum(mList.get(i).getAlbum());
+                    song.setPath(mList.get(i).getPath());
+                    song.setDuration(mList.get(i).getDuration());
+                    song.setSize(mList.get(i).getSize());
+                    song.setCheck(mList.get(i).isCheck());
+                    song.save();
+                }
+                List<Song> list = LitePal.findAll(Song.class);
+                if (list.size() > 0) {
+                    SPUtils.putBoolean(Constant.LOCAL_MUSIC_DB, true, context);
+                    BLog.d(TAG, "添加到本地数据库的音乐：" + list.size() + "首");
+                }
+
+            }
+        });
     }
 
     /**
@@ -316,6 +371,10 @@ public class LocalMusicActivity extends BasicActivity implements MediaPlayer.OnC
         rvMusic.setLayoutManager(new LinearLayoutManager(this));
         //设置适配器
         rvMusic.setAdapter(mAdapter);
+
+        //是否有缓存歌曲
+        SPUtils.putBoolean(Constant.LOCAL_MUSIC_DATA, true, context);
+        layScanMusic.setVisibility(View.GONE);
 
         //item的点击事件
         mAdapter.setOnItemChildClickListener(new BaseQuickAdapter.OnItemChildClickListener() {
@@ -375,6 +434,8 @@ public class LocalMusicActivity extends BasicActivity implements MediaPlayer.OnC
             BLog.i(TAG, mList.get(position).path);
             //设置播放音频的资源路径
             mediaPlayer.setDataSource(mList.get(position).path);
+            //设置歌曲所在专辑的封面图片
+            ivLogo.setImageBitmap(MusicUtils.getAlbumPicture(context, mList.get(position).getPath(),1));
             //设置播放的歌名和歌手
             tvSongName.setText(mList.get(position).song + " - " + mList.get(position).singer);
             //如果内容超过控件，则启用跑马灯效果
@@ -463,4 +524,5 @@ public class LocalMusicActivity extends BasicActivity implements MediaPlayer.OnC
         msg.arg1 = progress;
         mHandler.sendMessageDelayed(msg, INTERNAL_TIME);
     }
+
 }

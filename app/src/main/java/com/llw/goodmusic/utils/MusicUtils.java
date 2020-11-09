@@ -2,8 +2,14 @@ package com.llw.goodmusic.utils;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.media.MediaMetadataRetriever;
+import android.net.Uri;
 import android.provider.MediaStore;
 
+import com.llw.goodmusic.R;
 import com.llw.goodmusic.bean.Song;
 
 import java.util.ArrayList;
@@ -30,6 +36,8 @@ public class MusicUtils {
                 song.song = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE));
                 //歌手
                 song.singer = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST));
+                //专辑ID
+                song.albumId = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID));
                 //专辑名
                 song.album = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM));
                 //歌曲路径
@@ -56,35 +64,60 @@ public class MusicUtils {
     }
 
     /**
-     * 专辑图片
-     * @param context
+     * 获取专辑封面
+     *
+     * @param context 上下文
+     * @param path    歌曲路径
+     * @param type 1 Activity中显示，!1 通知栏中显示
      * @return
      */
-    private static String imgUrl(Context context) {
-        String album_art = null;
-        String[] mediaColumns1 = new String[]{MediaStore.Audio.Albums.ALBUM_ART, MediaStore.Audio.Albums.ALBUM};
+    public static Bitmap getAlbumPicture(Context context, String path,int type) {
+        //歌曲检索
+        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+        //设置数据源
+        mmr.setDataSource(path);
+        //获取图片数据
+        byte[] data = mmr.getEmbeddedPicture();
+        Bitmap albumPicture = null;
+        if (data != null) {
+            //获取bitmap对象
+            albumPicture = BitmapFactory.decodeByteArray(data, 0, data.length);
+            //获取宽高
+            int width = albumPicture.getWidth();
+            int height = albumPicture.getHeight();
+            // 创建操作图片用的Matrix对象
+            Matrix matrix = new Matrix();
+            // 计算缩放比例
+            float sx = ((float) 120 / width);
+            float sy = ((float) 120 / height);
+            // 设置缩放比例
+            matrix.postScale(sx, sy);
+            // 建立新的bitmap，其内容是对原bitmap的缩放后的图
+            albumPicture = Bitmap.createBitmap(albumPicture, 0, 0, width, height, matrix, false);
+        } else {
+            //从歌曲文件读取不出来专辑图片时用来代替的默认专辑图片
+            if(type == 1){
+                //Activity中显示
+                albumPicture = BitmapFactory.decodeResource(context.getResources(), R.mipmap.icon_music);
+            }else {
+                //通知栏显示
+                albumPicture = BitmapFactory.decodeResource(context.getResources(), R.mipmap.icon_notification_default);
+            }
 
-        Cursor cursor1 = context.getContentResolver().query(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI, mediaColumns1, null, null,
-                null);
+            int width = albumPicture.getWidth();
+            int height = albumPicture.getHeight();
+            // 创建操作图片用的Matrix对象
+            Matrix matrix = new Matrix();
+            // 计算缩放比例
+            float sx = ((float) 120 / width);
+            float sy = ((float) 120 / height);
+            // 设置缩放比例
+            matrix.postScale(sx, sy);
+            // 建立新的bitmap，其内容是对原bitmap的缩放后的图
+            albumPicture = Bitmap.createBitmap(albumPicture, 0, 0, width, height, matrix, false);
 
-        if (cursor1 != null) {
-            cursor1.moveToFirst();
-            do {
-                album_art = cursor1.getString(0);
-                if (album_art != null) {
-                    BLog.d("ALBUM_ART", album_art);
-                }
-
-                String album = cursor1.getString(1);
-                if (album != null) {
-                    BLog.d("ALBUM_ART", album);
-                }
-
-            } while (cursor1.moveToNext());
-
-            cursor1.close();
         }
-        return album_art;
+        return albumPicture;
     }
 
 }
