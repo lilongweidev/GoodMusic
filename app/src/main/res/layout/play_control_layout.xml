@@ -40,22 +40,37 @@
                 app:strokeWidth="2dp" />
         </RelativeLayout>
 
-        <!--歌曲信息  歌名 - 歌手 -->
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/tv_song_name"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:ellipsize="marquee"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
-            android:marqueeRepeatLimit="marquee_forever"
-            android:paddingLeft="@dimen/dp_12"
-            android:paddingRight="@dimen/dp_12"
-            android:singleLine="true"
-            android:text="Good Music"
-            android:textColor="@color/white"
-            android:textSize="@dimen/sp_16" />
+        <!--歌曲名布局-->
+        <RelativeLayout
+            android:layout_width="@dimen/dp_0"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <!--用于左右滑动切换上一曲、下一曲 -->
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/vp2_change_song"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <!-- 默认文字 LOGO -->
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tv_default_name"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:ellipsize="marquee"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:gravity="center_vertical"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:paddingLeft="@dimen/dp_12"
+                android:paddingRight="@dimen/dp_12"
+                android:singleLine="true"
+                android:text="Good Music"
+                android:background="@color/bottom_bg_color"
+                android:textColor="@color/white"
+                android:textSize="@dimen/sp_16" />
+        </RelativeLayout>
+
         <!--歌曲控制按钮-->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_play"

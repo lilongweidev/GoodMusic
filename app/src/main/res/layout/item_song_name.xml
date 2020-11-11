@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?><!--歌曲信息  歌名 - 歌手 -->
+<com.google.android.material.textview.MaterialTextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tv_song_name"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_weight="1"
+    android:gravity="center_vertical"
+    android:ellipsize="marquee"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:marqueeRepeatLimit="marquee_forever"
+    android:paddingLeft="@dimen/dp_12"
+    android:paddingRight="@dimen/dp_12"
+    android:singleLine="true"
+    android:text="Good Music"
+    android:textColor="@color/white"
+    android:textSize="@dimen/sp_16" />

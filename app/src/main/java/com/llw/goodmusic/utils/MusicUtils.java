@@ -21,6 +21,9 @@ import java.util.List;
  * @author llw
  */
 public class MusicUtils {
+
+    public static final String TAG = "MusicUtils";
+
     /**
      * 扫描系统里面的音频文件，返回一个list集合
      */
@@ -28,7 +31,7 @@ public class MusicUtils {
         List<Song> list = new ArrayList<Song>();
         // 媒体库查询语句（写一个工具类MusicUtils）
         Cursor cursor = context.getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, null,
-                null, MediaStore.Audio.AudioColumns.IS_MUSIC);
+                null, MediaStore.Audio.Media.IS_MUSIC);
         if (cursor != null) {
             while (cursor.moveToNext()) {
                 Song song = new Song();
@@ -46,6 +49,7 @@ public class MusicUtils {
                 song.duration = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION));
                 //歌曲大小
                 song.size = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE));
+                BLog.d(TAG,song.song);
 
                 if (song.size > 1000 * 800) {
                     // 注释部分是切割标题，分离出歌曲名和歌手 （本地媒体库读取的歌曲信息不规范）

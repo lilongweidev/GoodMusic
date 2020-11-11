@@ -1,6 +1,7 @@
 package com.llw.goodmusic.ui;
 
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
@@ -12,23 +13,30 @@ import android.widget.TextView;
 
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.Observer;
+import androidx.viewpager2.widget.ViewPager2;
+import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.textview.MaterialTextView;
 import com.llw.goodmusic.MusicApplication;
 import com.llw.goodmusic.R;
+import com.llw.goodmusic.adapter.SongNameAdapter;
 import com.llw.goodmusic.basic.BasicActivity;
+import com.llw.goodmusic.bean.ChangeUI;
 import com.llw.goodmusic.bean.Song;
 import com.llw.goodmusic.databinding.ActivityMainBinding;
 import com.llw.goodmusic.livedata.LiveDataBus;
 import com.llw.goodmusic.service.MusicService;
 import com.llw.goodmusic.utils.BLog;
+import com.llw.goodmusic.utils.Constant;
 import com.llw.goodmusic.utils.MusicUtils;
+import com.llw.goodmusic.utils.SPUtils;
 import com.llw.goodmusic.view.MusicRoundProgressView;
 
 import org.litepal.LitePal;
 
+import java.lang.reflect.Field;
 import java.util.List;
 
 import static com.llw.goodmusic.utils.Constant.CLOSE;
@@ -62,10 +70,17 @@ public class MainActivity extends BasicActivity implements View.OnClickListener 
      * 底部logo图标，点击之后弹出当前播放歌曲详情页
      */
     private ShapeableImageView ivLogo;
+
     /**
      * 底部当前播放歌名
      */
-    private MaterialTextView tvSongName;
+    private MaterialTextView tvDefaultName;
+
+    /**
+     * 底部VP左右滑动切换歌曲，VP的item里面是歌名+歌手
+     */
+    private ViewPager2 vpChangeSong;
+
     /**
      * 底部当前歌曲控制按钮, 播放和暂停
      */
@@ -99,6 +114,16 @@ public class MainActivity extends BasicActivity implements View.OnClickListener 
      */
     private LiveDataBus.BusMutableLiveData<String> notificationLiveData;
 
+    /**
+     * 歌名适配器
+     */
+    private SongNameAdapter songNameAdapter;
+
+    /**
+     * VP2的滑动监听
+     */
+    private PageChangeCallback pageChangeCallback;
+
     @Override
     public void initData(Bundle savedInstanceState) {
         BLog.d(TAG, "initData");
@@ -106,7 +131,8 @@ public class MainActivity extends BasicActivity implements View.OnClickListener 
         layLocalMusic = binding.layLocalMusic;
         tvLocalMusicNum = binding.tvLocalMusicNum;
         ivLogo = binding.playControlLayout.ivLogo;
-        tvSongName = binding.playControlLayout.tvSongName;
+        tvDefaultName = binding.playControlLayout.tvDefaultName;
+        vpChangeSong = binding.playControlLayout.vp2ChangeSong;
         btnPlay = binding.playControlLayout.btnPlay;
         musicProgress = binding.playControlLayout.musicProgress;
         layLocalMusic.setOnClickListener(this);
@@ -120,6 +146,19 @@ public class MainActivity extends BasicActivity implements View.OnClickListener 
         notificationObserver();
         //控制通知栏
         notificationLiveData = LiveDataBus.getInstance().with("notification_control", String.class);
+
+    }
+
+    /**
+     * 初始化ViewPager2
+     */
+    private void initViewPager2() {
+        //实例化VP变化回调
+        pageChangeCallback = new PageChangeCallback();
+        songNameAdapter = new SongNameAdapter(R.layout.item_song_name, mList);
+        vpChangeSong.setAdapter(songNameAdapter);
+        vpChangeSong.registerOnPageChangeCallback(pageChangeCallback);
+        songNameAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -128,7 +167,7 @@ public class MainActivity extends BasicActivity implements View.OnClickListener 
         BLog.d(TAG, "onStart");
         if (musicService != null) {
             changeUI(musicService.getPlayPosition());
-            if(musicService.mediaPlayer != null){
+            if (musicService.mediaPlayer != null) {
                 if (musicService.mediaPlayer.isPlaying()) {
                     btnPlay.setIcon(getDrawable(R.mipmap.icon_pause));
                     btnPlay.setIconTint(getColorStateList(R.color.gold_color));
@@ -149,10 +188,12 @@ public class MainActivity extends BasicActivity implements View.OnClickListener 
         activityLiveData.observe(MainActivity.this, true, new Observer<String>() {
             @Override
             public void onChanged(String state) {
+
                 switch (state) {
                     case PLAY:
                         btnPlay.setIcon(getDrawable(R.mipmap.icon_pause));
                         btnPlay.setIconTint(getColorStateList(R.color.gold_color));
+                        BLog.d(TAG,state);
                         changeUI(musicService.getPlayPosition());
                         break;
                     case PAUSE:
@@ -177,7 +218,6 @@ public class MainActivity extends BasicActivity implements View.OnClickListener 
                         break;
                 }
 
-
             }
         });
     }
@@ -190,10 +230,12 @@ public class MainActivity extends BasicActivity implements View.OnClickListener 
             listPosition = position;
 
             Song song = mList.get(position);
-            //歌名 - 歌手
-            tvSongName.setText(song.getSong() + " - " + song.getSinger());
-            //文字超出则采用跑马灯
-            tvSongName.setSelected(true);
+
+            if(SPUtils.getBoolean(Constant.IS_CHANGE,true,context)){
+                //切换选中的item
+                vpChangeSong.setCurrentItem(position, false);
+            }
+
             //设置歌曲所在专辑的封面图片
             ivLogo.setImageBitmap(MusicUtils.getAlbumPicture(context, song.getPath(), 1));
         }
@@ -207,6 +249,8 @@ public class MainActivity extends BasicActivity implements View.OnClickListener 
         BLog.d(TAG, "onResume");
         mList = LitePal.findAll(Song.class);
         tvLocalMusicNum.setText(String.valueOf(mList.size()));
+        //初始化ViewPager2，赋值，剩下的交给卧底去处理播放信息
+        initViewPager2();
     }
 
 
@@ -227,6 +271,7 @@ public class MainActivity extends BasicActivity implements View.OnClickListener 
                     show("没有可播放的音乐,请到 “本地音乐” 进行扫描");
                     return;
                 }
+                tvDefaultName.setVisibility(View.GONE);
 
                 //点击主页面时的播放按钮时先判断当前是否正在播放歌曲
                 if (musicService.mediaPlayer == null) {
@@ -270,6 +315,67 @@ public class MainActivity extends BasicActivity implements View.OnClickListener 
         }
     };
 
+
+    /**
+     * ViewPager2 的滑动监听回调
+     */
+    class PageChangeCallback extends OnPageChangeCallback {
+
+        private int pos = 0;
+        private boolean isScrolled;
+
+        /**
+         * 滑动状态更改
+         *
+         * @param state
+         */
+        @Override
+        public void onPageScrollStateChanged(int state) {
+            BLog.d(TAG,state+"");
+
+            if (state == ViewPager2.SCROLL_STATE_SETTLING) {
+                isScrolled = false;
+            }else if(state == ViewPager2.SCROLL_STATE_DRAGGING){
+                //人为滑动
+                SPUtils.putBoolean(Constant.IS_CHANGE,false,context);
+            } else if (state == ViewPager2.SCROLL_STATE_IDLE && isScrolled) {
+                //此处为你需要的情况，再加入当前页码判断可知道是第一页还是最后一页
+                if (mList.size() != 1 && pos == (mList.size() - 1)) {
+
+                    BLog.d(TAG, "切换到第一首");
+
+                    vpChangeSong.setCurrentItem(0, false);
+
+                } else if (mList.size() != 1 && pos == 0) {
+
+                    BLog.d(TAG, "切换到最后一首");
+                    vpChangeSong.setCurrentItem(mList.size() - 1, false);
+
+                }
+            } else {
+                isScrolled = true;
+
+            }
+        }
+
+        /**
+         * 页面选中
+         *
+         * @param position
+         */
+        @Override
+        public void onPageSelected(int position) {
+
+            pos = position;
+
+            if(musicService == null){
+                return;
+            }
+            musicService.play(position);
+
+        }
+    }
+
     /**
      * 增加一个退出应用的提示
      *
@@ -291,7 +397,6 @@ public class MainActivity extends BasicActivity implements View.OnClickListener 
         }
         return super.onKeyDown(keyCode, event);
     }
-
 
     @Override
     protected void onDestroy() {

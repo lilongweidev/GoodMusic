@@ -22,12 +22,15 @@ import androidx.core.app.NotificationCompat;
 import androidx.lifecycle.LifecycleService;
 import androidx.lifecycle.Observer;
 
+import com.llw.goodmusic.bean.ChangeUI;
 import com.llw.goodmusic.receiver.NotificationClickReceiver;
 import com.llw.goodmusic.R;
 import com.llw.goodmusic.bean.Song;
 import com.llw.goodmusic.livedata.LiveDataBus;
 import com.llw.goodmusic.utils.BLog;
+import com.llw.goodmusic.utils.Constant;
 import com.llw.goodmusic.utils.MusicUtils;
+import com.llw.goodmusic.utils.SPUtils;
 
 import org.litepal.LitePal;
 
@@ -174,10 +177,17 @@ public class MusicService extends LifecycleService implements MediaPlayer.OnComp
             mediaPlayer.setOnCompletionListener(this);
         }
 
+        //播放时 获取当前歌曲列表是否有歌曲
+        mList = LitePal.findAll(Song.class);
+        if (mList.size() <= 0) {
+            return;
+        }
+
         try {
             //切歌前先重置，释放掉之前的资源
             mediaPlayer.reset();
             playPosition = position;
+
             //设置播放音频的资源路径
             mediaPlayer.setDataSource(mList.get(position).path);
             mediaPlayer.prepare();
@@ -270,6 +280,7 @@ public class MusicService extends LifecycleService implements MediaPlayer.OnComp
 
     /**
      * 获取当前播放位置
+     *
      * @return
      */
     public int getPlayPosition() {
@@ -288,6 +299,7 @@ public class MusicService extends LifecycleService implements MediaPlayer.OnComp
         PendingIntent prevPendingIntent = PendingIntent.getBroadcast(this, 0, intentPrev, 0);
         //为prev控件注册事件
         remoteViews.setOnClickPendingIntent(R.id.btn_notification_previous, prevPendingIntent);
+
 
         //通知栏控制器播放暂停按钮广播操作  //用于接收广播时过滤意图信息
         Intent intentPlay = new Intent(PLAY);
@@ -311,6 +323,7 @@ public class MusicService extends LifecycleService implements MediaPlayer.OnComp
 
     /**
      * 更改通知的信息和UI
+     *
      * @param position
      */
     public void updateNotificationShow(int position) {
@@ -384,6 +397,7 @@ public class MusicService extends LifecycleService implements MediaPlayer.OnComp
 
         @Override
         public void onReceive(Context context, Intent intent) {
+            SPUtils.putBoolean(Constant.IS_CHANGE,true,context);
             //UI控制
             UIControl(intent.getAction(), TAG);
         }
@@ -414,22 +428,22 @@ public class MusicService extends LifecycleService implements MediaPlayer.OnComp
             case PLAY:
                 //暂停或继续
                 pauseOrContinueMusic();
-                BLog.d(tag,PLAY+" or "+PAUSE);
+                BLog.d(tag, PLAY + " or " + PAUSE);
                 break;
             case PREV:
 
                 previousMusic();
-                BLog.d(tag,PREV);
+                BLog.d(tag, PREV);
                 break;
             case NEXT:
 
                 nextMusic();
-                BLog.d(tag,NEXT);
+                BLog.d(tag, NEXT);
                 break;
             case CLOSE:
 
                 closeNotification();
-                BLog.d(tag,CLOSE);
+                BLog.d(tag, CLOSE);
                 break;
             default:
                 break;
@@ -469,6 +483,5 @@ public class MusicService extends LifecycleService implements MediaPlayer.OnComp
             unregisterReceiver(musicReceiver);
         }
     }
-
 
 }
